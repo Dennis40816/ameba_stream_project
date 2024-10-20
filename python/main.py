@@ -5,7 +5,7 @@ import cv2
 
 # example callback
 def my_frame_callback(frame, other_info):
-    print(f"write {other_info['mac']} into pic")
+    # print(f"write {other_info['mac']} into pic")
     pass
 
 if __name__ == "__main__":

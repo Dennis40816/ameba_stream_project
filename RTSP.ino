@@ -5,7 +5,7 @@
 #include <WiFiClient.h>
 
 #define CHANNEL   0
-#define RTSP_FPS  (10)
+#define RTSP_FPS  (30)
 #define RTSP_PORT 554  // Standard RTSP port
 
 // Default preset configurations for each video channel:
@@ -14,19 +14,22 @@
 // Channel 2 : 1280 x 720  30FPS MJPEG
 
 // VideoSetting config(CHANNEL, RTSP_FPS, VIDEO_H264, 0);
-VideoSetting config(CHANNEL);
+VideoSetting config(0);
+// VideoSetting config(VIDEO_FHD, RTSP_FPS, VIDEO_H264, 0);
 RTSP rtsp;
 StreamIO videoStreamer(1, 1);  // 1 Input Video -> 1 Output RTSP
 
-char ssid[] = "Frank";     // your network SSID (name)
-char pass[] = "24577079";  // your network password
+// char ssid[] = "Frank";     // your network SSID (name)
+// char pass[] = "24577079";  // your network password
+char ssid[] = "a52s";     // your network SSID (name)
+char pass[] = "11111111";  // your network password
 int status = WL_IDLE_STATUS;
 
 WiFiClient client;
 unsigned long previousMillis = 0;
 const long interval = 10000;  // 10 seconds
 
-#define SERVER_IP   "192.168.1.111"  // Replace with your server's IP
+#define SERVER_IP   "192.168.153.129"  // Replace with your server's IP
 #define SERVER_PORT 12345
 
 void sendDeviceInfo(WiFiClient& client, const char* serverIP,
@@ -85,7 +88,8 @@ void setup()
 
   // Configure camera video channel with video format information
   // Adjust the bitrate based on your WiFi network quality
-  // config.setBitrate(2 * 1024 * 1024);     // Recommend to use 2Mbps for RTSP
+  config.setBitrate(20 * 1024 * 1024);  // Recommend to use 2Mbps for RTSP
+  // config.setJpegQuality(25);
   // streaming to prevent network congestion
   Camera.configVideoChannel(CHANNEL, config);
   Camera.videoInit();
