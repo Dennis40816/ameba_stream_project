@@ -41,6 +41,7 @@ class RTSPClientProcess:
                 # Enable window resizing
                 cv2.setWindowProperty(window_name, cv2.WND_PROP_ASPECT_RATIO, cv2.WINDOW_KEEPRATIO)
 
+                # GET NEW FRAME
                 while True:
                     ret, frame = cap.read()
                     if not ret:
@@ -61,6 +62,7 @@ class RTSPClientProcess:
                         frame_callback(frame, other_info)
 
                     cv2.imshow(window_name, frame)
+                    
                     if cv2.waitKey(1) & 0xFF == ord('q'):
                         print(f"[{mac}] Quit signal received. Terminating RTSP client.")
                         cap.release()

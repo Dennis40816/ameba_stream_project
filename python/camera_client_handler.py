@@ -5,7 +5,7 @@ import socket
 import time
 from rtsp_client import RTSPClientProcess
 import multiprocessing
-from utils import DEBUG
+from utils import DEBUG, SOCKET_TIMEOUT
 
 class CameraClientHandler(threading.Thread):
     """Handles communication with a connected camera client."""
@@ -22,7 +22,7 @@ class CameraClientHandler(threading.Thread):
 
     def run(self):
         print(f"New connection from {self.addr}")
-        self.client_socket.settimeout(1.0)
+        self.client_socket.settimeout(SOCKET_TIMEOUT)
         buffer = ''
 
         try:
