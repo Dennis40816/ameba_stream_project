@@ -4,11 +4,14 @@
 #include "RTSP.h"
 #include <WiFiClient.h>
 
-#define CHANNEL   0
-#define RTSP_FPS  (30)
-#define RTSP_PORT 554  // Standard RTSP port
+#define CHANNEL     0
+#define RTSP_FPS    (30)
+#define RTSP_PORT   554                // Standard RTSP port
 #define SERVER_IP   "192.168.153.129"  // Replace with your server's IP
 #define SERVER_PORT 12345
+
+/* >> DISABLE THIS WHEN YOU WANT DIRECTLY SHOW RTSP << */
+#define START_STREAM_ONLY_AFTER_CONNECT_TO_SERVER
 
 // Default preset configurations for each video channel:
 // Channel 0 : 1920 x 1080 30FPS H264
@@ -20,22 +23,26 @@ VideoSetting config(CHANNEL);
 // VideoSetting config(VIDEO_FHD, RTSP_FPS, VIDEO_H264, 0);
 
 RTSP rtsp;
+WiFiClient client;
 StreamIO videoStreamer(1, 1);  // 1 Input Video -> 1 Output RTSP
 
 // char ssid[] = "Frank";     // your network SSID (name)
 // char pass[] = "24577079";  // your network password
-char ssid[] = "a52s";     // your network SSID (name)
+char ssid[] = "a52s";      // your network SSID (name)
 char pass[] = "11111111";  // your network password
-int status = WL_IDLE_STATUS;
 
-WiFiClient client;
+int status = WL_IDLE_STATUS;
 unsigned long previousMillis = 0;
 const long interval = 10000;  // 10 seconds
+
+#ifdef START_STREAM_ONLY_AFTER_CONNECT_TO_SERVER
+bool enable_camera_stream = false;
+#endif
 
 void sendDeviceInfo(WiFiClient& client, const char* serverIP,
                     uint16_t serverPort, uint16_t rtspPort)
 {
-  if (client.connect(serverIP, serverPort))
+  if (client.connect(serverIP, serverPort) && client.connected())
   {
     /**
      * @brief example:
@@ -64,10 +71,29 @@ void sendDeviceInfo(WiFiClient& client, const char* serverIP,
 
     // Send data to server
     client.println(dataToSend);
+
+/* enable camera */
+#ifdef START_STREAM_ONLY_AFTER_CONNECT_TO_SERVER
+    if (!enable_camera_stream)
+    {
+      Camera.channelBegin(CHANNEL);
+      enable_camera_stream = true;
+      Serial.println("\n\n\nCamera channel begin\n\n\n");
+    }
+#endif
   }
   else
   {
     Serial.println("Connection to server failed");
+
+#ifdef START_STREAM_ONLY_AFTER_CONNECT_TO_SERVER
+    if (enable_camera_stream)
+    {
+      Camera.channelEnd(CHANNEL);
+      enable_camera_stream = true;
+      Serial.println("\n\n\nCamera channel end\n\n\n");
+    }
+#endif
   }
 }
 
@@ -106,8 +132,10 @@ void setup()
     Serial.println("StreamIO link start failed");
   }
 
+#ifndef START_STREAM_ONLY_AFTER_CONNECT_TO_SERVER
   // Start data stream from video channel
   Camera.channelBegin(CHANNEL);
+#endif
 
   delay(1000);
   printInfo();
