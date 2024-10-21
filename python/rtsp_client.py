@@ -168,7 +168,7 @@ class RTSPClient:
                     continue
 
                 if self.options.display_window:
-                    window_name = f"RTSP Stream - {self.mac}"
+                    window_name = f"RTSP Stream - {rtsp_url}"
                     cv2.namedWindow(window_name, cv2.WINDOW_NORMAL if self.options.resize_window else cv2.WINDOW_AUTOSIZE)
                     if self.options.resize_window:
                         cv2.resizeWindow(window_name, self.options.window_width, self.options.window_height)

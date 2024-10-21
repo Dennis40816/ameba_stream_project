@@ -7,15 +7,18 @@
 #define CHANNEL   0
 #define RTSP_FPS  (30)
 #define RTSP_PORT 554  // Standard RTSP port
+#define SERVER_IP   "192.168.153.129"  // Replace with your server's IP
+#define SERVER_PORT 12345
 
 // Default preset configurations for each video channel:
 // Channel 0 : 1920 x 1080 30FPS H264
 // Channel 1 : 1280 x 720  30FPS H264
 // Channel 2 : 1280 x 720  30FPS MJPEG
 
-// VideoSetting config(CHANNEL, RTSP_FPS, VIDEO_H264, 0);
-VideoSetting config(0);
+VideoSetting config(CHANNEL);
+// // Custom FPS
 // VideoSetting config(VIDEO_FHD, RTSP_FPS, VIDEO_H264, 0);
+
 RTSP rtsp;
 StreamIO videoStreamer(1, 1);  // 1 Input Video -> 1 Output RTSP
 
@@ -28,9 +31,6 @@ int status = WL_IDLE_STATUS;
 WiFiClient client;
 unsigned long previousMillis = 0;
 const long interval = 10000;  // 10 seconds
-
-#define SERVER_IP   "192.168.153.129"  // Replace with your server's IP
-#define SERVER_PORT 12345
 
 void sendDeviceInfo(WiFiClient& client, const char* serverIP,
                     uint16_t serverPort, uint16_t rtspPort)
