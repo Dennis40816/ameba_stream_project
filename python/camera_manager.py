@@ -7,11 +7,12 @@ from datetime import datetime
 class CameraManager:
     """Manages connected cameras and their heartbeats."""
 
-    def __init__(self, timeout=30):
+    def __init__(self, client_threads, timeout=30):
         self.connected_cameras = {}
         self.camera_lock = threading.Lock()
         self.timeout = timeout  # Heartbeat timeout
         self.stop_event = threading.Event()
+        self.client_threads = client_threads
 
     def add_camera(self, ip_address, mac, cam_ip, port, process):
         """Adds or updates a camera in the connected_cameras dictionary."""
@@ -63,6 +64,12 @@ class CameraManager:
                             process.terminate()
                             process.join()
                         del self.connected_cameras[ip_address]
+                        
+                        ## XXX: currently stuck here, remove thread also
+                        # if ip_address in self.client_threads:
+                        #     self.client_threads[ip_address].stop()
+                        #     self.client_threads[ip_address].join()
+                            
             if self.stop_event.wait(10):
                 break  # stop_event is set, exit the loop
         print('Heartbeat checking thread terminated!')

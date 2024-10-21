@@ -14,8 +14,8 @@ class Server:
         self.host = host
         self.port = port
         self.server_socket = None
-        self.camera_manager = CameraManager()
         self.client_threads = {}
+        self.camera_manager = CameraManager(client_threads=self.client_threads)
         self.heartbeat_thread = None
         self.camera_table_thread = None
         self.frame_callback = frame_callback
