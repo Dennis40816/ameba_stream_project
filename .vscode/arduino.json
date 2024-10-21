@@ -2,5 +2,5 @@
     "sketch": "RTSP.ino",
     "configuration": "EraseFlash=Disable,AutoUploadMode=Disable,StdLibInit=Enable,UploadBaudrate=2M,LoadNNModelSource=flash,CameraOption=f37,OTAMode=Disable,FCSMode=Disable",
     "board": "realtek:AmebaPro2:Ameba_AMB82-MINI",
-    "port": "COM6"
+    "port": "COM8"
 }

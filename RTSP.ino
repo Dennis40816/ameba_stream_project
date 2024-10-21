@@ -11,16 +11,16 @@
 #define SERVER_PORT 12345
 
 /* >> DISABLE THIS WHEN YOU WANT DIRECTLY SHOW RTSP << */
-#define START_STREAM_ONLY_AFTER_CONNECT_TO_SERVER
+// #define START_STREAM_ONLY_AFTER_CONNECT_TO_SERVER
 
 // Default preset configurations for each video channel:
 // Channel 0 : 1920 x 1080 30FPS H264
 // Channel 1 : 1280 x 720  30FPS H264
 // Channel 2 : 1280 x 720  30FPS MJPEG
 
-VideoSetting config(CHANNEL);
+// VideoSetting config(CHANNEL);
 // // Custom FPS
-// VideoSetting config(VIDEO_FHD, RTSP_FPS, VIDEO_H264, 0);
+VideoSetting config(VIDEO_FHD, RTSP_FPS, VIDEO_HEVC, 0);
 
 RTSP rtsp;
 WiFiClient client;
@@ -90,7 +90,7 @@ void sendDeviceInfo(WiFiClient& client, const char* serverIP,
     if (enable_camera_stream)
     {
       Camera.channelEnd(CHANNEL);
-      enable_camera_stream = true;
+      enable_camera_stream = false;
       Serial.println("\n\n\nCamera channel end\n\n\n");
     }
 #endif
@@ -114,7 +114,7 @@ void setup()
 
   // Configure camera video channel with video format information
   // Adjust the bitrate based on your WiFi network quality
-  config.setBitrate(20 * 1024 * 1024);  // Recommend to use 2Mbps for RTSP
+  config.setBitrate(4 * 1024 * 1024);  // Recommend to use 2Mbps for RTSP
   // config.setJpegQuality(25);
   // streaming to prevent network congestion
   Camera.configVideoChannel(CHANNEL, config);

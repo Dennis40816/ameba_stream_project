@@ -177,7 +177,7 @@ class RTSPClient:
                 freshest_frame = FreshestFrame(cap, callback=None)
 
             if freshest_frame:
-                seq, frame = freshest_frame.read(wait=True, timeout=1)
+                seq, frame = freshest_frame.read(wait=True, timeout=1.0)
                 if frame is None:
                     print(f"[{self.mac}] No frame received. Reconnecting...")
                     freshest_frame.release()
