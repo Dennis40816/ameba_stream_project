@@ -3,7 +3,7 @@
 import threading
 import socket
 import time
-from rtsp_client import RTSPClientProcess
+from process_wrapper import run_rtsp_client
 import multiprocessing
 from utils import DEBUG, SOCKET_TIMEOUT
 
@@ -60,7 +60,7 @@ class CameraClientHandler(threading.Thread):
 
                                 # Start RTSP client in a new process
                                 p = multiprocessing.Process(
-                                    target=RTSPClientProcess.run, args=(cam_ip, port, mac, self.frame_callback))
+                                    target=run_rtsp_client, args=(cam_ip, port, mac, self.frame_callback))
                                 p.start()
 
                                 # Add camera to manager
