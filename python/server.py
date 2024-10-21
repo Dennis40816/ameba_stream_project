@@ -15,7 +15,7 @@ class Server:
         self.port = port
         self.server_socket = None
         self.camera_manager = CameraManager()
-        self.client_threads = []
+        self.client_threads = {}
         self.heartbeat_thread = None
         self.camera_table_thread = None
         self.frame_callback = frame_callback
@@ -49,11 +49,26 @@ class Server:
             while not self.camera_manager.stop_event.is_set():
                 try:
                     client_socket, addr = self.server_socket.accept()
+                    
+                    # check if there is already a running thread
+                    # addr format -> (ip,port)
+                    ip, port  = addr
+                    if ip in self.client_threads:
+                        # close existing thread
+                        print(f'Closing client handler thread: {addr} ...')
+                        self.client_threads[ip].stop()
+                        self.client_threads[ip].join()
+                        print(f'Closed client handler thread: {addr} .')
+                    
                     client_handler = CameraClientHandler(
                         client_socket, addr, self.camera_manager, self.frame_callback)
                     client_handler.daemon = True
                     client_handler.start()
-                    self.client_threads.append(client_handler)
+                    
+                    # add new thread to the dictionary
+                    self.client_threads[ip] = client_handler
+
+                    
                 except socket.timeout:
                     pass  # Do not continue
         except KeyboardInterrupt:
@@ -68,10 +83,10 @@ class Server:
         print("Server socket closed.")
 
         # Signal all client handlers to stop
-        for handler in self.client_threads:
+        for handler in self.client_threads.values():
             handler.stop()
         # Wait for all client threads to finish
-        for handler in self.client_threads:
+        for handler in self.client_threads.values():
             handler.join()
         print("All client threads have been terminated.")
 
