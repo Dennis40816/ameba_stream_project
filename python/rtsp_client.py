@@ -75,7 +75,8 @@ class FreshestFrame(threading.Thread):
         while self.running:
             ret, img = self.capture.read()
             if not ret:
-                print(f"FreshestFrame: Failed to read frame. PID: {os.getpid()}")
+                print(
+                    f"FreshestFrame: Failed to read frame. PID: {os.getpid()}")
                 continue
             counter += 1
 
@@ -106,7 +107,8 @@ class FreshestFrame(threading.Thread):
                 if seqnumber < 1:
                     seqnumber = 1
 
-                rv = self.cond.wait_for(lambda: self.latestnum >= seqnumber, timeout=timeout)
+                rv = self.cond.wait_for(
+                    lambda: self.latestnum >= seqnumber, timeout=timeout)
                 if not rv:
                     return (self.latestnum, self.frame)
 
@@ -160,7 +162,8 @@ class RTSPClient:
                 print(f"[{self.mac}] Connecting to RTSP stream at {rtsp_url}")
                 cap = cv2.VideoCapture(rtsp_url)
                 if not cap.isOpened():
-                    print(f"[{self.mac}] Failed to open RTSP stream. Retrying in {self.options.retry_interval} seconds...")
+                    print(
+                        f"[{self.mac}] Failed to open RTSP stream. Retrying in {self.options.retry_interval} seconds...")
                     if cap:
                         cap.release()
                     cap = None
@@ -169,9 +172,11 @@ class RTSPClient:
 
                 if self.options.display_window:
                     window_name = f"RTSP Stream - {rtsp_url}"
-                    cv2.namedWindow(window_name, cv2.WINDOW_NORMAL if self.options.resize_window else cv2.WINDOW_AUTOSIZE)
+                    cv2.namedWindow(
+                        window_name, cv2.WINDOW_NORMAL if self.options.resize_window else cv2.WINDOW_AUTOSIZE)
                     if self.options.resize_window:
-                        cv2.resizeWindow(window_name, self.options.window_width, self.options.window_height)
+                        cv2.resizeWindow(
+                            window_name, self.options.window_width, self.options.window_height)
 
                 # Initialize FreshestFrame
                 freshest_frame = FreshestFrame(cap, callback=None)
@@ -193,20 +198,23 @@ class RTSPClient:
                 elapsed = current_time - self._last_time
                 if elapsed > 0:
                     current_fps = 1.0 / elapsed
-                    self.fps = self.alpha * current_fps + (1 - self.alpha) * self.fps
+                    self.fps = self.alpha * current_fps + \
+                        (1 - self.alpha) * self.fps
                 self._last_time = current_time
 
                 if self.options.show_fps:
                     frame = self._add_fps(frame)
 
                 if self.frame_callback:
-                    other_info = {'mac': self.mac}
+                    other_info = {'mac': self.mac,
+                                  'rtsp': rtsp_url, 'seq': seq, 'ip': self.cam_ip}
                     self.frame_callback(frame, other_info)
 
                 if self.options.display_window and freshest_frame:
                     cv2.imshow(window_name, frame)
                     if cv2.waitKey(1) & 0xFF == ord('q'):
-                        print(f"[{self.mac}] Quit signal received. Terminating RTSP client.")
+                        print(
+                            f"[{self.mac}] Quit signal received. Terminating RTSP client.")
                         self.stop()
                         break
 
