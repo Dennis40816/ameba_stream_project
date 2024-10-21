@@ -9,6 +9,8 @@ import cv2
 
 ## 降低 fps? to 5?
 
+## https://medium.com/@JayantSBhati/crafting-advanced-video-processing-pipelines-setting-up-opencv-with-gstreamer-backend-using-mingw-4065839e200c
+
 ## 熱點問題 (要使用獨立分享器?) bit rate 4, 20 的差別?
 
 ## https://stackoverflow.com/questions/60816436/open-cv-rtsp-camera-buffer-lag

@@ -25,6 +25,7 @@ VideoSetting config(VIDEO_FHD, RTSP_FPS, VIDEO_HEVC, 0);
 RTSP rtsp;
 WiFiClient client;
 StreamIO videoStreamer(1, 1);  // 1 Input Video -> 1 Output RTSP
+CameraSetting configCam;
 
 // char ssid[] = "Frank";     // your network SSID (name)
 // char pass[] = "24577079";  // your network password
@@ -135,7 +136,11 @@ void setup()
 #ifndef START_STREAM_ONLY_AFTER_CONNECT_TO_SERVER
   // Start data stream from video channel
   Camera.channelBegin(CHANNEL);
+  
 #endif
+
+  // CAM config
+  // configCam.setContrast(100);
 
   delay(1000);
   printInfo();
