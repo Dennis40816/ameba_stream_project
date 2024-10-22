@@ -50,6 +50,9 @@ class Server:
                 try:
                     client_socket, addr = self.server_socket.accept()
                     
+                    # if a connection was accepted
+                    print(f'A connection from {addr[0]}:{addr[1]} was accepted.')
+                    
                     # check if there is already a running thread
                     # addr format -> (ip,port)
                     ip, port  = addr
@@ -68,9 +71,9 @@ class Server:
                     # add new thread to the dictionary
                     self.client_threads[ip] = client_handler
 
-                    
                 except socket.timeout:
-                    pass  # Do not continue
+                    pass  # Do not use continue
+                
         except KeyboardInterrupt:
             print("\nKeyboardInterrupt received. Shutting down server...")
             self.camera_manager.stop_event.set()
