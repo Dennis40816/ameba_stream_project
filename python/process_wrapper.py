@@ -4,7 +4,7 @@ from rtsp_client import RTSPClient, RTSPClientOptions
 import time
 
 
-def run_rtsp_client(cam_ip, port, mac, frame_callback=None, show_fps=True):
+def run_rtsp_client(cam_ip, port, mac, frame_callback=None, show_stream=True, show_fps=True):
     """
     包裝函數，用於在獨立進程中啟動 RTSPClient。
 
@@ -17,7 +17,7 @@ def run_rtsp_client(cam_ip, port, mac, frame_callback=None, show_fps=True):
     """
 
     options = RTSPClientOptions(
-        display_window=True,      # 是否顯示視窗
+        display_window=show_stream,      # 是否顯示視窗
         resize_window=True,       # 是否調整視窗大小
         window_width=800,         # 視窗寬度
         window_height=600,        # 視窗高度

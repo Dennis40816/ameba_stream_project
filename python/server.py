@@ -10,7 +10,7 @@ from camera_client_handler import CameraClientHandler
 class Server:
     """Main server class to listen for camera client connections."""
 
-    def __init__(self, host='0.0.0.0', port=12345, frame_callback=None):
+    def __init__(self, host='0.0.0.0', port=12345, frame_callback=None, show_stream=True):
         self.host = host
         self.port = port
         self.server_socket = None
@@ -19,6 +19,7 @@ class Server:
         self.heartbeat_thread = None
         self.camera_table_thread = None
         self.frame_callback = frame_callback
+        self.show_stream = show_stream
 
     def start(self):
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -64,7 +65,7 @@ class Server:
                         print(f'Closed client handler thread: {addr} .')
                     
                     client_handler = CameraClientHandler(
-                        client_socket, addr, self.camera_manager, self.frame_callback)
+                        client_socket, addr, self.camera_manager, self.frame_callback, self.show_stream)
                     client_handler.daemon = True
                     client_handler.start()
                     

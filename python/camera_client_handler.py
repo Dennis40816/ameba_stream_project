@@ -23,7 +23,7 @@ CameraClientHandler
 class CameraClientHandler(threading.Thread):
     """Handles communication with a connected camera client."""
 
-    def __init__(self, client_socket, addr, camera_manager, frame_callback):
+    def __init__(self, client_socket, addr, camera_manager, frame_callback, show_stream=True):
         super().__init__()
         self.client_socket = client_socket
         self.addr = addr
@@ -32,6 +32,7 @@ class CameraClientHandler(threading.Thread):
         self.ip_address = addr[0]
         self.mac = None
         self.frame_callback = frame_callback
+        self.show_stream = show_stream
 
     def run(self):
         print(f"New connection from {self.addr}")
@@ -74,7 +75,7 @@ class CameraClientHandler(threading.Thread):
 
                                 # Start RTSP client in a new process
                                 p = multiprocessing.Process(
-                                    target=run_rtsp_client, args=(cam_ip, port, mac, self.frame_callback))
+                                    target=run_rtsp_client, args=(cam_ip, port, mac, self.frame_callback, self.show_stream))
                                 p.start()
 
                                 # Add camera to manager
