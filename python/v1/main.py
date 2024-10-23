@@ -5,22 +5,28 @@ import cv2
 import os
 import queue
 import threading
+from mdns_service import MDNSService
+from utils import get_local_ip
 
-## TODO: 可以開關 opencv 
+# TODO: 可以開關 opencv
 
 # 2.4 G Wi-Fi 可能比較穩定?
 
-## https://medium.com/@JayantSBhati/crafting-advanced-video-processing-pipelines-setting-up-opencv-with-gstreamer-backend-using-mingw-4065839e200c
+# https://medium.com/@JayantSBhati/crafting-advanced-video-processing-pipelines-setting-up-opencv-with-gstreamer-backend-using-mingw-4065839e200c
 
-## https://stackoverflow.com/questions/60816436/open-cv-rtsp-camera-buffer-lag
-## https://blog.csdn.net/a545454669/article/details/129469324
+# https://stackoverflow.com/questions/60816436/open-cv-rtsp-camera-buffer-lag
+# https://blog.csdn.net/a545454669/article/details/129469324
 
 # example callback class
+
+# MDNS Library
+# https://github.com/mjansson/mdns/
 
 # Disable this if the CPU usage is too high
 SHOW_STREAM = False
 SAVE_PICTURE = True
 SAVE_EVERY_N_FRAME = 15
+
 
 class FrameCallback:
     def __init__(self, n=5):
@@ -34,10 +40,11 @@ class FrameCallback:
         self.frame_count = {}
         self.queue = None  # Queue to store frames for saving
         self.stop_thread = False
-        self.worker_thread = None  # Initialize the worker thread as None (lazy initialization)
+        # Initialize the worker thread as None (lazy initialization)
+        self.worker_thread = None
         self.condition = None  # Condition variable for event-driven logic
         self.initialized = False
-    
+
     def initialize_worker(self):
         """
         Initialize the worker thread and queue only once using lru_cache to ensure single execution.
@@ -47,10 +54,9 @@ class FrameCallback:
         self.queue = queue.Queue()  # Initialize the queue
         self.worker_thread = threading.Thread(target=self.save_frame_worker)
         self.condition = threading.Condition()
-        
+
         # thread starts
         self.worker_thread.start()
-
 
     def __call__(self, frame, other_info):
         """
@@ -63,7 +69,7 @@ class FrameCallback:
         # Ensure worker thread is initialized only once
         if self.initialized == False:
             self.initialize_worker()
-        
+
         ip = other_info.get('ip')
         seq = other_info.get('seq')
 
@@ -129,7 +135,7 @@ class FrameCallback:
         with self.condition:
             self.stop_thread = True
             self.condition.notify_all()  # Wake up the worker thread if it's waiting
-            
+
         print(f'frame count: {self.frame_count}')
 
         if self.worker_thread is not None:
@@ -143,7 +149,21 @@ class FrameCallback:
 
 
 if __name__ == "__main__":
+    current_ip = get_local_ip()
+
+    # start mDNS service on local network
+    mdns = MDNSService(
+        service_name="ic-ameba",
+        service_type="_rawsocket._tcp.local.",  # 使用 TCP 的 raw socket
+        # service_type="_arduino._tcp.local.",
+        port=12345,  # Raw socket 服務的端口
+        ip_address=current_ip,  # 當前伺服器的 IP 地址
+        properties={'info': 'Ameba Raw Socket mDNS for I&C LAB'}
+    )
+    
+    mdns.start()
+
     # 2 pic per sec
-    frame_callback = FrameCallback(n=SAVE_EVERY_N_FRAME) 
+    frame_callback = FrameCallback(n=SAVE_EVERY_N_FRAME)
     server = Server(frame_callback=frame_callback, show_stream=SHOW_STREAM)
     server.start()

@@ -4,12 +4,13 @@
 #include "RTSP.h"
 #include <WiFiClient.h>
 
-#define CHANNEL      (0)
-#define RTSP_FPS     (30)
-#define RTSP_PORT    (554)                // Standard RTSP port
-#define SERVER_IP    ("192.168.153.129")  // Replace with your server's IP
-#define SERVER_PORT  (12345)
-#define BIT_RATE_MPS (4)
+#define CHANNEL             (0)
+#define RTSP_FPS            (30)
+#define RTSP_PORT           (554)  // Standard RTSP port
+#define SERVER_SERVICE_NAME ("ic-ameba.local")
+#define SERVER_IP           ("192.168.153.129")  // Replace with your server's IP
+#define SERVER_PORT         (12345)
+#define BIT_RATE_MPS        (4)
 
 /* >> DISABLE THIS WHEN YOU WANT DIRECTLY SHOW RTSP << */
 // #define START_STREAM_ONLY_AFTER_CONNECT_TO_SERVER
@@ -86,7 +87,9 @@ void sendDeviceInfo(WiFiClient& client, const char* serverIP,
   }
   else
   {
-    Serial.println("Connection to server failed");
+    Serial.print("Connection to server ");
+    Serial.print(SERVER_IP);
+    Serial.println(" failed");
 
 #ifdef START_STREAM_ONLY_AFTER_CONNECT_TO_SERVER
     if (enable_camera_stream)
