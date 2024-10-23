@@ -60,6 +60,7 @@ class CameraManager:
                         mac = self.connected_cameras[ip_address]['mac']
                         print(f"[{mac}] at {ip_address} timed out. Terminating RTSP process.")
                         process = self.connected_cameras[ip_address]['process']
+                        # FIXME: should call stop instead of terminate -> cause jpeg losing
                         if process and process.is_alive():
                             process.terminate()
                             process.join()

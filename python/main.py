@@ -3,6 +3,9 @@
 from server import Server
 import cv2
 import os
+import queue
+import threading
+from functools import lru_cache
 
 ## TODO: 可以開關 opencv 
 
@@ -23,25 +26,50 @@ import os
 
 SAVE_PICTURE = True
 
+import os
+import cv2
+import threading
+import queue
+
 class FrameCallback:
     def __init__(self, n=5):
         """
-        初始化 FrameCallback 實例。
+        Initialize the FrameCallback instance.
 
         Args:
-            n (int): 每隔 n 幀處理一次。
+            n (int): Process every n frames.
         """
         self.n = n
         self.frame_count = {}
+        self.queue = None  # Queue to store frames for saving
+        self.stop_thread = False
+        self.worker_thread = None  # Initialize the worker thread as None (lazy initialization)
+        self.condition = None
+    
+    @lru_cache(maxsize=1)
+    def initialize_worker(self):
+        self.queue = queue.Queue()  # Initialize the queue
+        self.worker_thread = threading.Thread(target=self.save_frame_worker)
+        self.worker_thread.start()
+
 
     def __call__(self, frame, other_info):
         """
-        回調函數，每隔 n 幀進行一次操作。
+        Callback function to process every n frames.
 
         Args:
-            frame (numpy.ndarray): 捕獲的幀。
-            other_info (dict): 包含 'ip' 和 'seq' 鍵的字典。
+            frame (numpy.ndarray): The captured frame.
+            other_info (dict): Dictionary containing 'ip' and 'seq' keys.
         """
+        # run only once
+        self.initialize_worker()
+        
+        # Initialize the worker thread when the first frame is processed
+        if self.worker_thread is None:
+            print("Starting worker thread...")
+            self.worker_thread = threading.Thread(target=self.save_frame_worker)
+            self.worker_thread.start()
+
         ip = other_info.get('ip')
         seq = other_info.get('seq')
 
@@ -49,32 +77,67 @@ class FrameCallback:
             print("Missing 'ip' or 'seq' information.")
             return
 
-        # 初始化該 IP 的計數器
+        # Initialize frame counter for the IP if not already done
         if ip not in self.frame_count:
             self.frame_count[ip] = 0
 
         self.frame_count[ip] += 1
 
-        # 每隔 n 幀處理一次
+        # Process every n frames
         if self.frame_count[ip] % self.n == 0:
-            # 定義保存目錄基於 IP 地址
+            # Define the save directory based on IP address
             save_dir = os.path.join("img", ip)
-            if SAVE_PICTURE == False:
-                # 此處使用 print 代替實際儲存
-                print(f"Frame {self.frame_count[ip]} for IP {ip} would be saved to {save_dir}/{seq}.jpg")
-            else:
-                # 如果要實際保存，可以取消以下註釋
+            filename = f"{seq}.jpg"
+            filepath = os.path.join(save_dir, filename)
+
+            # Put frame and related information into the queue
+            if SAVE_PICTURE:
+                self.queue.put((frame, filepath))
+
+            # For debugging, print the frame information
+            # print(f"Frame {self.frame_count[ip]} for IP {ip} added to queue for saving at {filepath}")
+
+    def save_frame_worker(self):
+        """
+        Worker thread to save frames from the queue.
+        """
+        while not self.stop_thread or not self.queue.empty():
+            try:
+                # Get the frame and filepath from the queue
+                frame, filepath = self.queue.get(timeout=1)  # Use timeout to prevent blocking
+                save_dir = os.path.dirname(filepath)
+
+                # Ensure the save directory exists
                 os.makedirs(save_dir, exist_ok=True)
-                filename = f"{seq}.jpg"
-                filepath = os.path.join(save_dir, filename)
-                try:
-                    success = cv2.imwrite(filepath, frame)
-                    if success:
-                        print(f"Frame saved to {filepath}")
-                    else:
-                        print(f"Failed to save frame to {filepath}")
-                except Exception as e:
-                    print(f"Error saving frame to {filepath}: {e}")
+
+                # Save the frame to the file
+                success = cv2.imwrite(filepath, frame)
+                if success:
+                    pass
+                    # print(f"Frame saved to {filepath}")
+                else:
+                    print(f"Failed to save frame to {filepath}")
+
+                # Mark the task as done
+                self.queue.task_done()
+
+            except queue.Empty:
+                continue  # If the queue is empty, continue to wait for new frames
+
+    def stop(self):
+        """
+        Stop the worker thread and ensure all frames in the queue are saved before stopping.
+        """
+        if self.worker_thread is not None:
+            # Wait until the queue is empty before stopping
+            print("Waiting for the queue to be empty...")
+            self.queue.join()  # Block until all tasks are done
+
+            # Signal the thread to stop
+            self.stop_thread = True
+            self.worker_thread.join()
+            print("Worker thread stopped after processing all frames.")
+
 
 
 # def my_frame_callback(frame, other_info):

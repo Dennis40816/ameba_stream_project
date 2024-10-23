@@ -39,4 +39,5 @@ def run_rtsp_client(cam_ip, port, mac, frame_callback=None, show_fps=True):
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
+        print('Close owing to KeyboardInterrupt from run_rtsp_client')
         client.stop()

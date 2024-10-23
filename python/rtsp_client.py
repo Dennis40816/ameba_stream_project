@@ -149,6 +149,12 @@ class RTSPClient:
         print(f"[{self.mac}] Stopping RTSP client.")
         self._stop_event.set()
         self.thread.join()
+        # wait for img store thread stop
+        if hasattr(self.frame_callback, 'stop') and callable(getattr(self.frame_callback, 'stop')):
+            self.frame_callback.stop()
+        else:
+            print("self.frame_callback does not have a 'stop' method.")    
+                
         print(f"[{self.mac}] RTSP client stopped.")
 
     def _run(self):
