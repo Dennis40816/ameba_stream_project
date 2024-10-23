@@ -5,7 +5,6 @@ import cv2
 import os
 import queue
 import threading
-from functools import lru_cache
 
 ## TODO: 可以開關 opencv 
 
@@ -26,11 +25,6 @@ from functools import lru_cache
 
 SAVE_PICTURE = True
 
-import os
-import cv2
-import threading
-import queue
-
 class FrameCallback:
     def __init__(self, n=5):
         """
@@ -44,12 +38,20 @@ class FrameCallback:
         self.queue = None  # Queue to store frames for saving
         self.stop_thread = False
         self.worker_thread = None  # Initialize the worker thread as None (lazy initialization)
-        self.condition = None
+        self.condition = None  # Condition variable for event-driven logic
+        self.initialized = False
     
-    @lru_cache(maxsize=1)
     def initialize_worker(self):
+        """
+        Initialize the worker thread and queue only once using lru_cache to ensure single execution.
+        """
+        # variable init
+        self.initialized = True
         self.queue = queue.Queue()  # Initialize the queue
         self.worker_thread = threading.Thread(target=self.save_frame_worker)
+        self.condition = threading.Condition()
+        
+        # thread starts
         self.worker_thread.start()
 
 
@@ -61,15 +63,10 @@ class FrameCallback:
             frame (numpy.ndarray): The captured frame.
             other_info (dict): Dictionary containing 'ip' and 'seq' keys.
         """
-        # run only once
-        self.initialize_worker()
+        # Ensure worker thread is initialized only once
+        if self.initialized == False:
+            self.initialize_worker()
         
-        # Initialize the worker thread when the first frame is processed
-        if self.worker_thread is None:
-            print("Starting worker thread...")
-            self.worker_thread = threading.Thread(target=self.save_frame_worker)
-            self.worker_thread.start()
-
         ip = other_info.get('ip')
         seq = other_info.get('seq')
 
@@ -90,88 +87,63 @@ class FrameCallback:
             filename = f"{seq}.jpg"
             filepath = os.path.join(save_dir, filename)
 
-            # Put frame and related information into the queue
+            # Use the condition to notify the worker thread when a new frame is ready
             if SAVE_PICTURE:
-                self.queue.put((frame, filepath))
-
-            # For debugging, print the frame information
-            # print(f"Frame {self.frame_count[ip]} for IP {ip} added to queue for saving at {filepath}")
+                with self.condition:
+                    self.queue.put((frame, filepath))
+                    self.condition.notify()  # Notify worker thread
 
     def save_frame_worker(self):
         """
         Worker thread to save frames from the queue.
         """
-        while not self.stop_thread or not self.queue.empty():
-            try:
+        while True:
+            with self.condition:
+                while self.queue.empty() and not self.stop_thread:
+                    self.condition.wait()  # Wait until notified or stop_thread is set
+
+                # If stop_thread is set and queue is empty, exit the loop
+                if self.stop_thread and self.queue.empty():
+                    break
+
                 # Get the frame and filepath from the queue
-                frame, filepath = self.queue.get(timeout=1)  # Use timeout to prevent blocking
-                save_dir = os.path.dirname(filepath)
+                frame, filepath = self.queue.get()
 
-                # Ensure the save directory exists
-                os.makedirs(save_dir, exist_ok=True)
+            # Process the frame outside of the lock
+            save_dir = os.path.dirname(filepath)
 
-                # Save the frame to the file
-                success = cv2.imwrite(filepath, frame)
-                if success:
-                    pass
-                    # print(f"Frame saved to {filepath}")
-                else:
-                    print(f"Failed to save frame to {filepath}")
+            # Ensure the save directory exists
+            os.makedirs(save_dir, exist_ok=True)
 
-                # Mark the task as done
-                self.queue.task_done()
+            # Save the frame to the file
+            success = cv2.imwrite(filepath, frame)
+            if success:
+                pass
+            else:
+                print(f"Failed to save frame to {filepath}")
 
-            except queue.Empty:
-                continue  # If the queue is empty, continue to wait for new frames
+            # Mark the task as done
+            self.queue.task_done()
 
     def stop(self):
         """
         Stop the worker thread and ensure all frames in the queue are saved before stopping.
         """
+        with self.condition:
+            self.stop_thread = True
+            self.condition.notify_all()  # Wake up the worker thread if it's waiting
+            
+        print(f'frame count: {self.frame_count}')
+
         if self.worker_thread is not None:
             # Wait until the queue is empty before stopping
             print("Waiting for the queue to be empty...")
             self.queue.join()  # Block until all tasks are done
 
             # Signal the thread to stop
-            self.stop_thread = True
             self.worker_thread.join()
             print("Worker thread stopped after processing all frames.")
 
-
-
-# def my_frame_callback(frame, other_info):
-#     """
-#     Callback function to save the frame as a JPEG file in img/{ip}/{seq}.jpg
-
-#     Args:
-#         frame (numpy.ndarray): The captured frame.
-#         other_info (dict): Dictionary containing 'mac' and 'seq' keys.
-#     """
-#     ip = other_info.get('ip')
-#     seq = other_info.get('seq')
-
-#     if not ip or seq is None:
-#         print("Missing 'mac' or 'seq' information.")
-#         return
-
-#     # Define the save directory based on MAC address
-#     save_dir = os.path.join("img", ip)
-#     os.makedirs(save_dir, exist_ok=True)
-
-#     # Define the filename using the sequence number
-#     filename = f"{seq}.jpg"
-#     filepath = os.path.join(save_dir, filename)
-
-#     # Save the frame as a JPEG file
-#     try:
-#         success = cv2.imwrite(filepath, frame)
-#         if success:
-#             print(f"Frame saved to {filepath}")
-#         else:
-#             print(f"Failed to save frame to {filepath}")
-#     except Exception as e:
-#         print(f"Error saving frame to {filepath}: {e}")
 
 if __name__ == "__main__":
     # 2 pic per sec
