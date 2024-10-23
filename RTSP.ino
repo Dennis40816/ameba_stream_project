@@ -4,11 +4,12 @@
 #include "RTSP.h"
 #include <WiFiClient.h>
 
-#define CHANNEL     0
-#define RTSP_FPS    (30)
-#define RTSP_PORT   554                // Standard RTSP port
-#define SERVER_IP   "192.168.153.129"  // Replace with your server's IP
-#define SERVER_PORT 12345
+#define CHANNEL      (0)
+#define RTSP_FPS     (30)
+#define RTSP_PORT    (554)                // Standard RTSP port
+#define SERVER_IP    ("192.168.153.129")  // Replace with your server's IP
+#define SERVER_PORT  (12345)
+#define BIT_RATE_MPS (4)
 
 /* >> DISABLE THIS WHEN YOU WANT DIRECTLY SHOW RTSP << */
 // #define START_STREAM_ONLY_AFTER_CONNECT_TO_SERVER
@@ -115,7 +116,8 @@ void setup()
 
   // Configure camera video channel with video format information
   // Adjust the bitrate based on your WiFi network quality
-  config.setBitrate(4 * 1024 * 1024);  // Recommend to use 2Mbps for RTSP
+  config.setBitrate(BIT_RATE_MPS * 1024 *
+                    1024);  // Recommend to use 2Mbps for RTSP
   // config.setJpegQuality(25);
   // streaming to prevent network congestion
   Camera.configVideoChannel(CHANNEL, config);
@@ -136,7 +138,7 @@ void setup()
 #ifndef START_STREAM_ONLY_AFTER_CONNECT_TO_SERVER
   // Start data stream from video channel
   Camera.channelBegin(CHANNEL);
-  
+
 #endif
 
   // CAM config
