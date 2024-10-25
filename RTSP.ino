@@ -5,10 +5,8 @@
 #include <WiFiClient.h>
 #include <AmebaMdnsManager.hpp>
 
-// char ssid[] = "Frank";     // your network SSID (name)
-// char pass[] = "24577079";  // your network password
-char ssid[] = "a52s";      // your network SSID (name)
-char pass[] = "11111111";  // your network password
+char ssid[] = "your-ssid";     // your network SSID (name)
+char pass[] = "your-password";  // your network password
 
 #define CHANNEL             (0)
 #define RTSP_FPS            (30)
