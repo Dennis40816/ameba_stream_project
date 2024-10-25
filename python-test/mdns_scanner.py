@@ -15,7 +15,7 @@ zeroconf = Zeroconf()
 listener = MyListener()
 
 # 瀏覽指定的 raw socket 服務
-browser = ServiceBrowser(zeroconf, "_arduino._tcp.local.", listener)
+browser = ServiceBrowser(zeroconf, "_rawsocket._tcp.local.", listener)
 
 try:
     input("Press enter to exit...\n")

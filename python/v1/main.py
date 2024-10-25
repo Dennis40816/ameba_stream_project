@@ -7,6 +7,7 @@ import queue
 import threading
 from mdns_service import MDNSService
 from utils import get_local_ip
+import time
 
 # TODO: 可以開關 opencv
 
@@ -23,7 +24,7 @@ from utils import get_local_ip
 # https://github.com/mjansson/mdns/
 
 # Disable this if the CPU usage is too high
-SHOW_STREAM = False
+SHOW_STREAM = True
 SAVE_PICTURE = True
 SAVE_EVERY_N_FRAME = 15
 
@@ -160,8 +161,19 @@ if __name__ == "__main__":
         ip_address=current_ip,  # 當前伺服器的 IP 地址
         properties={'info': 'Ameba Raw Socket mDNS for I&C LAB'}
     )
-    
+
     mdns.start()
+
+    print("##########################################################################")
+    print("Global config list: ")
+    print(" ")
+    print(f"SHOW_STREAM: {SHOW_STREAM}")
+    print(f"SAVE_PICTURE: : {SAVE_PICTURE}")
+    print(f"SAVE_EVERY_N_FRAME: {SAVE_EVERY_N_FRAME}")
+    print(" ")
+    print("##########################################################################")
+    print("Please Change `SHOW_STREAM` to False if CPU usage is too high!!")
+    time.sleep(5)
 
     # 2 pic per sec
     frame_callback = FrameCallback(n=SAVE_EVERY_N_FRAME)

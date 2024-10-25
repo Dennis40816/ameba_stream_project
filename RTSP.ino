@@ -3,12 +3,18 @@
 #include "VideoStream.h"
 #include "RTSP.h"
 #include <WiFiClient.h>
+#include <AmebaMdnsManager.hpp>
+
+// char ssid[] = "Frank";     // your network SSID (name)
+// char pass[] = "24577079";  // your network password
+char ssid[] = "a52s";      // your network SSID (name)
+char pass[] = "11111111";  // your network password
 
 #define CHANNEL             (0)
 #define RTSP_FPS            (30)
 #define RTSP_PORT           (554)  // Standard RTSP port
 #define SERVER_SERVICE_NAME ("ic-ameba.local")
-#define SERVER_IP           ("192.168.153.129")  // Replace with your server's IP
+#define SERVER_IP           ("192.168.153.129")  // aborted!!
 #define SERVER_PORT         (12345)
 #define BIT_RATE_MPS        (4)
 
@@ -26,13 +32,11 @@ VideoSetting config(VIDEO_FHD, RTSP_FPS, VIDEO_HEVC, 0);
 
 RTSP rtsp;
 WiFiClient client;
+MDNSManager mdnsManager(false, true);
 StreamIO videoStreamer(1, 1);  // 1 Input Video -> 1 Output RTSP
 CameraSetting configCam;
 
-// char ssid[] = "Frank";     // your network SSID (name)
-// char pass[] = "24577079";  // your network password
-char ssid[] = "a52s";      // your network SSID (name)
-char pass[] = "11111111";  // your network password
+String ServerIp = "";
 
 int status = WL_IDLE_STATUS;
 unsigned long previousMillis = 0;
@@ -41,6 +45,36 @@ const long interval = 10000;  // 10 seconds
 #ifdef START_STREAM_ONLY_AFTER_CONNECT_TO_SERVER
 bool enable_camera_stream = false;
 #endif
+
+bool getServerIpByMdns()
+{
+  bool ret = false;
+
+  Serial.println("Try to get server IP by mDNS");
+
+  mdnsManager.initUnicast();
+  mdnsManager.sendUnicastQuery(SERVER_SERVICE_NAME);
+  delay(500);
+  mdnsManager.update();  // recv data from socket buffer
+  String tmp = mdnsManager.getLastUnicastReplyIP();
+  if (mdnsManager.isValidIpV4(tmp))
+  {
+    Serial.print("Got ic-ameba service ip: ");
+    Serial.print("Replace Current ServerIp: ");
+    Serial.print(ServerIp);
+    Serial.print("to ");
+    Serial.println(tmp);
+
+    ServerIp = tmp;
+    ret = true;
+  }
+  else
+  {
+    Serial.println("Got ic-ameba.local IP failed!");
+  }
+  mdnsManager.closeSockets();
+  return ret;
+}
 
 void sendDeviceInfo(WiFiClient& client, const char* serverIP,
                     uint16_t serverPort, uint16_t rtspPort)
@@ -88,7 +122,7 @@ void sendDeviceInfo(WiFiClient& client, const char* serverIP,
   else
   {
     Serial.print("Connection to server ");
-    Serial.print(SERVER_IP);
+    Serial.print(ServerIp);
     Serial.println(" failed");
 
 #ifdef START_STREAM_ONLY_AFTER_CONNECT_TO_SERVER
@@ -99,6 +133,12 @@ void sendDeviceInfo(WiFiClient& client, const char* serverIP,
       Serial.println("\n\n\nCamera channel end\n\n\n");
     }
 #endif
+
+    // try to get server ip by mDNS
+    while (!getServerIpByMdns())
+    {
+      ;
+    }
   }
 }
 
@@ -150,8 +190,14 @@ void setup()
   delay(1000);
   printInfo();
 
+  // try to get ic-ameba mDNS server ip
+  while (!getServerIpByMdns())
+  {
+    ;
+  }
+
   // Connect to Python TCP server
-  sendDeviceInfo(client, SERVER_IP, SERVER_PORT, RTSP_PORT);
+  sendDeviceInfo(client, ServerIp.c_str(), SERVER_PORT, RTSP_PORT);
 }
 
 void loop()
@@ -161,7 +207,7 @@ void loop()
   if (!client.connected())
   {
     Serial.println("Disconnected from server, attempting to reconnect");
-    sendDeviceInfo(client, SERVER_IP, SERVER_PORT, RTSP_PORT);
+    sendDeviceInfo(client, ServerIp.c_str(), SERVER_PORT, RTSP_PORT);
   }
 
   if (currentMillis - previousMillis >= interval)
