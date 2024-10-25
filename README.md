@@ -52,11 +52,12 @@
 - `v2`: 規劃中
 
 ## 實驗影片
-- [影片連結](./data/video/demo.mp4)
-<video controls width="600">
-  <source src="data/video/demo.mp4" type="video/mp4">
-  您的瀏覽器不支援影片播放。
-</video>
+- [影片連結](https://youtu.be/PGFpv_XXGeo)
+
+
+https://github.com/user-attachments/assets/8ebd3582-642d-42e5-9c9c-998134e5b559
+
+
 
 ## 注意事項
 
