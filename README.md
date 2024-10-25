@@ -7,7 +7,7 @@
 - `RTSP.ino`: AMB82-MINI 的韌體，可用 Arduino IDE 或是 VSCode 中的 Arduino Community Edition 燒錄，燒錄順序請見[燒錄說明](#燒錄說明)
 - `python/v1/main.py`: Server 的主程式，裡面有參數可以進行調整。Server 開啟時，也會在內網啟動名為 `ic-ameba.local` 的 mDNS 服務，AMB82-MINI 會尋找該網域並獲得 Server 的 IP，可以動態獲得目前的 Server IP。可以調整的參數如下:
   
-  - `SHOW_STREAM`: True/False, 是否開啟 CV2 查看相機的 RTSP 串流，開啟時，每台相機會以獨立進程打開 CV 畫面顯示 RTSP Video。當 CPU 占用過高==應關閉==。
+  - `SHOW_STREAM`: True/False, 是否開啟 CV2 查看相機的 RTSP 串流，開啟時，每台相機會以獨立進程打開 CV 畫面顯示 RTSP Video。**當 CPU 占用過高應關閉**。
   - `SAVE_PICTURE`: True/False, 是否儲存圖片
   - `SAVE_EVERY_N_FRAME`: 每 n 張 frame 擷取一張圖片，預設 15，即每 15 frames 擷取一張圖片，目前 RTSP 的 FPS 為 30，所以每秒約擷取兩張圖片，設定過低將導致畫面延遲
   
@@ -61,11 +61,11 @@ https://github.com/user-attachments/assets/8ebd3582-642d-42e5-9c9c-998134e5b559
 
 ## 注意事項
 
-1. AMB82-MINI 需要==安裝天線==才能上網，可接收 2.4G/5G 頻段!!
+1. AMB82-MINI 需要**安裝天線**才能上網，可接收 2.4G/5G 頻段!!
 2. 更新 Wi-Fi Access Point 需要重新燒錄，將 SSID, PASSWORD 更新(OTA 功能尚未實現)
 3. 目前版本僅對 3 台 AMB82-MINI 在 AP, 手機熱點上進行過實驗，12 台 Camera 需要再行確認
 4. 請避免使用已經被很多電腦連接的 AP 當作 Wi-Fi access point，盡量使用沒有人使用的 Wi-Fi 或手機熱點
 5. 使用手機熱點時請盡量避免觀看 youtube 等需要數據流量的動作，避免數據雍塞
-6. ==手機熱點的最大數量似乎只能到 10 台 Device(看手機和廠牌)，扣掉一台 Server 最多能連接 9 台 Camera==
+6. **手機熱點的最大數量似乎只能到 10 台 Device(看手機和廠牌)，扣掉一台 Server 最多能連接 9 台 Camera**
 7. 未來需要找 USB 集線器為 AMB82-MINI 群提供足夠的電源，電腦沒有那麼多 USB 接口!
 8. 每次執行前，最好將儲存的圖片移動或刪除，避免不同次測試的圖片混在一起
