@@ -2,6 +2,12 @@
 
 本專案的目的是透過一個中央 server 與至多 12 組 AMB82-MINI 開發板建立通訊管道，並以 RTSP 串流的方式擷取每個板載相機實時圖像，內建儲存圖片功能，圖片會按照 camera IP 儲存，並提供使用 frame callback 範例，客製化每張圖片需要進行的額外動作。
 
+## 實驗影片
+- [影片連結](https://youtu.be/PGFpv_XXGeo)
+
+
+https://github.com/user-attachments/assets/8ebd3582-642d-42e5-9c9c-998134e5b559
+
 ## Repo Arch
 
 - `RTSP.ino`: AMB82-MINI 的韌體，可用 Arduino IDE 或是 VSCode 中的 Arduino Community Edition 燒錄，燒錄順序請見[燒錄說明](#燒錄說明)
@@ -50,14 +56,6 @@
 
 - `v1.2 stable`: 是目前主要的使用版本，僅針對三台使用 JX-FP37(P) 相機的 AMB82-MINI 進行過實驗，實驗結果如[實驗影片](#實驗影片)
 - `v2`: 規劃中
-
-## 實驗影片
-- [影片連結](https://youtu.be/PGFpv_XXGeo)
-
-
-https://github.com/user-attachments/assets/8ebd3582-642d-42e5-9c9c-998134e5b559
-
-
 
 ## 注意事項
 
